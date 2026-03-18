@@ -275,7 +275,7 @@
         <circle class="progress-fill" id="progressCircle" cx="108" cy="108" r="100" />
       </svg>
     </div>
-    <button class="play-btn" id="playBtn" aria-label="Başlat">
+    <button class="play-btn" id="playBtn" aria-label="Baslat">
       <svg id="playIcon" viewBox="0 0 24 24">
         <polygon points="6,3 20,12 6,21" />
       </svg>
@@ -294,9 +294,9 @@
 </div>
 
 <div class="done-msg" id="doneMsg">
-  <div class="checkmark">✨</div>
+  <div class="checkmark">&#10024;</div>
   <div class="done-text">Harika!</div>
-  <div class="done-sub">2 dakika tamam, dişler pırıl pırıl</div>
+  <div class="done-sub">2 dakika tamam, disler piril piril</div>
 </div>
 
 <script>
@@ -305,7 +305,7 @@
 
   // Songs — mp3 files in songs/ folder
   const songs = [
-    { title: 'TuneBrush Mix', artist: '♪', file: 'songs/song1.mp3' },
+    { title: 'TuneBrush Mix', artist: '\u266a', file: '/tunebrush/songs/song1.mp3' },
   ];
 
   // Elements
@@ -345,13 +345,13 @@
     "Talk slick to my face",
     "If you shine like this breath",
     "They gon' know your place",
-    "Brush, brush — floss and flex",
+    "Brush, brush \u2014 floss and flex",
     "Rinse that hate right off my neck",
-    "Shine, shine — teeth on check",
+    "Shine, shine \u2014 teeth on check",
     "Whole block know I earn respect",
-    "Brush, brush — grind and gleam",
+    "Brush, brush \u2014 grind and gleam",
     "White so loud, can't hear your scheme",
-    "Shine, shine — watch me beam",
+    "Shine, shine \u2014 watch me beam",
     "West side king with a fresh routine",
     "Tap that faucet",
     "Steam cut through the air",
@@ -369,13 +369,13 @@
     "Hit a side profile",
     "Put your money where your molars at",
     "I crack a smile",
-    "Brush, brush — floss and flex",
+    "Brush, brush \u2014 floss and flex",
     "Rinse that hate right off my neck",
-    "Shine, shine — teeth on check",
+    "Shine, shine \u2014 teeth on check",
     "Whole block know I earn respect",
-    "Brush, brush — grind and gleam",
+    "Brush, brush \u2014 grind and gleam",
     "White so loud, can't hear your scheme",
-    "Shine, shine — watch me beam",
+    "Shine, shine \u2014 watch me beam",
     "West side king with a fresh routine",
     "Listen...",
     "Out here, they count your crowns",
@@ -392,13 +392,13 @@
     "We cover the block",
     "Breath fresh, word strong",
     "That's respect that don't rot",
-    "Brush, brush — floss and flex",
+    "Brush, brush \u2014 floss and flex",
     "Rinse that hate right off my neck",
-    "Shine, shine — teeth on check",
+    "Shine, shine \u2014 teeth on check",
     "Whole block know I earn respect",
-    "Brush, brush — grind and gleam",
+    "Brush, brush \u2014 grind and gleam",
     "White so loud, can't hear your scheme",
-    "Shine, shine — watch me beam",
+    "Shine, shine \u2014 watch me beam",
     "West side king with a fresh routine",
     "Grill in, drip on",
     "Door lock, keys swing",
@@ -419,7 +419,7 @@
     lyricsContainer.classList.add('visible');
 
     showNextLyric();
-    // ~2.5s per line → 120s / 2.5 ≈ 48 lines, we have ~80 so plenty
+    // ~2.5s per line => 120s / 2.5 = 48 lines, we have ~80 so plenty
     lyricsIntervalId = setInterval(showNextLyric, 2500);
   }
 
