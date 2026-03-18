@@ -1,8 +1,9 @@
-const CACHE_NAME = 'tunebrush-v3';
+const CACHE_NAME = 'tunebrush-v4';
+const BASE = '/tunebrush/';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
+  BASE,
+  BASE + 'index.html',
+  BASE + 'manifest.json',
 ];
 
 self.addEventListener('install', (e) => {
