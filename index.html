@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>TuneBrush</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #1a1a1a;
+      --accent: #4ecdc4;
+      --accent-glow: rgba(78, 205, 196, 0.3);
+      --text: #f0f0f0;
+      --text-dim: #666;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      width: 100%;
+      max-width: 400px;
+      padding: 2rem;
+    }
+
+    /* Logo / Title */
+    .title {
+      font-size: 1.5rem;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      transition: color 0.5s;
+    }
+
+    .title.active {
+      color: var(--accent);
+    }
+
+    /* Timer display */
+    .timer {
+      font-size: 4rem;
+      font-weight: 200;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.05em;
+      opacity: 0.3;
+      transition: opacity 0.5s;
+    }
+
+    .timer.active {
+      opacity: 1;
+    }
+
+    /* Main button */
+    .btn-container {
+      position: relative;
+      width: 200px;
+      height: 200px;
+    }
+
+    .btn-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 3px solid #2a2a2a;
+      transition: border-color 0.5s;
+    }
+
+    .btn-ring.active {
+      border-color: rgba(78, 205, 196, 0.15);
+      box-shadow: 0 0 30px var(--accent-glow);
+    }
+
+    .btn-progress {
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+    }
+
+    .btn-progress svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .progress-track {
+      fill: none;
+      stroke: #1e1e1e;
+      stroke-width: 6;
+    }
+
+    .progress-fill {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-dasharray: 653;
+      stroke-dashoffset: 653;
+      transition: stroke-dashoffset 0.5s linear;
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+    }
+
+    .play-btn {
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.3s, transform 0.15s;
+    }
+
+    .play-btn:active {
+      transform: scale(0.95);
+    }
+
+    .play-btn svg {
+      width: 60px;
+      height: 60px;
+      fill: var(--text);
+      transition: fill 0.3s;
+    }
+
+    .play-btn.active svg {
+      fill: var(--accent);
+    }
+
+    /* Song info */
+    .song-info {
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.5s;
+      min-height: 2.5rem;
+    }
+
+    .song-info.visible {
+      opacity: 1;
+    }
+
+    .song-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .song-artist {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    /* Lyrics */
+    .lyrics-container {
+      height: 3rem;
+      overflow: hidden;
+      text-align: center;
+      width: 100%;
+      max-width: 320px;
+      position: relative;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    .lyrics-container.visible {
+      opacity: 1;
+    }
+
+    .lyrics-line {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      line-height: 1.4;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .lyrics-line.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .lyrics-line.exiting {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    /* Done state */
+    .done-msg {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s;
+      z-index: 10;
+    }
+
+    .done-msg.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .done-msg .checkmark {
+      font-size: 5rem;
+      margin-bottom: 1rem;
+    }
+
+    .done-msg .done-text {
+      font-size: 1.5rem;
+      font-weight: 300;
+    }
+
+    .done-msg .done-sub {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      margin-top: 0.5rem;
+    }
+
+    /* Pulse animation */
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+      50% { box-shadow: 0 0 20px 10px var(--accent-glow); }
+    }
+
+    .btn-ring.active {
+      animation: pulse 2s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="title" id="title">TuneBrush</div>
+
+  <div class="timer" id="timer">2:00</div>
+
+  <div class="btn-container">
+    <div class="btn-ring" id="btnRing"></div>
+    <div class="btn-progress">
+      <svg viewBox="0 0 216 216">
+        <circle class="progress-track" cx="108" cy="108" r="100" />
+        <circle class="progress-fill" id="progressCircle" cx="108" cy="108" r="100" />
+      </svg>
+    </div>
+    <button class="play-btn" id="playBtn" aria-label="Başlat">
+      <svg id="playIcon" viewBox="0 0 24 24">
+        <polygon points="6,3 20,12 6,21" />
+      </svg>
+    </button>
+  </div>
+
+  <div class="lyrics-container" id="lyricsContainer">
+    <div class="lyrics-line" id="lyricsLine1"></div>
+    <div class="lyrics-line" id="lyricsLine2"></div>
+  </div>
+
+  <div class="song-info" id="songInfo">
+    <div class="song-title" id="songTitle"></div>
+    <div class="song-artist" id="songArtist"></div>
+  </div>
+</div>
+
+<div class="done-msg" id="doneMsg">
+  <div class="checkmark">✨</div>
+  <div class="done-text">Harika!</div>
+  <div class="done-sub">2 dakika tamam, dişler pırıl pırıl</div>
+</div>
+
+<script>
+  const TOTAL_SECONDS = 120;
+  const CIRCUMFERENCE = 2 * Math.PI * 100; // ~628, matches SVG r=100
+
+  // Songs — mp3 files in songs/ folder
+  const songs = [
+    { title: 'TuneBrush Mix', artist: '♪', file: 'songs/song1.mp3' },
+  ];
+
+  // Elements
+  const playBtn = document.getElementById('playBtn');
+  const playIcon = document.getElementById('playIcon');
+  const timerEl = document.getElementById('timer');
+  const titleEl = document.getElementById('title');
+  const btnRing = document.getElementById('btnRing');
+  const progressCircle = document.getElementById('progressCircle');
+  const songInfo = document.getElementById('songInfo');
+  const songTitle = document.getElementById('songTitle');
+  const songArtist = document.getElementById('songArtist');
+  const doneMsg = document.getElementById('doneMsg');
+
+  const lyricsContainer = document.getElementById('lyricsContainer');
+  const lyricsLine1 = document.getElementById('lyricsLine1');
+  const lyricsLine2 = document.getElementById('lyricsLine2');
+
+  const lyrics = [
+    "Alarm still ringin'",
+    "Chain already on",
+    "I ain't even blinkin'",
+    "New day, same throne",
+    "Slide out the sheets",
+    "Feet hit cold floor",
+    "Check the blinds once",
+    "Then I open that drawer",
+    "Gold grill grinnin'",
+    "In a velvet box",
+    "Toothpaste tube twisted",
+    "Sittin' by my watch",
+    "Squeeze from the middle",
+    "Yeah, I live that fast",
+    "Mint foam mountin'",
+    "In the diamond glass",
+    "Stare at my reflection",
+    "Talk slick to my face",
+    "If you shine like this breath",
+    "They gon' know your place",
+    "Brush, brush — floss and flex",
+    "Rinse that hate right off my neck",
+    "Shine, shine — teeth on check",
+    "Whole block know I earn respect",
+    "Brush, brush — grind and gleam",
+    "White so loud, can't hear your scheme",
+    "Shine, shine — watch me beam",
+    "West side king with a fresh routine",
+    "Tap that faucet",
+    "Steam cut through the air",
+    "Tattoo on my knuckles",
+    "Drippin' soap in my hair",
+    "Phone buzz twice",
+    "But I let that ring",
+    "Got foam on my tongue",
+    "Can't answer a thing",
+    "Line up my grill",
+    "Like a frontline squad",
+    "Slot by slot",
+    "Every soldier on guard",
+    "Flex in the mirror",
+    "Hit a side profile",
+    "Put your money where your molars at",
+    "I crack a smile",
+    "Brush, brush — floss and flex",
+    "Rinse that hate right off my neck",
+    "Shine, shine — teeth on check",
+    "Whole block know I earn respect",
+    "Brush, brush — grind and gleam",
+    "White so loud, can't hear your scheme",
+    "Shine, shine — watch me beam",
+    "West side king with a fresh routine",
+    "Listen...",
+    "Out here, they count your crowns",
+    "Not just the ones on your head",
+    "We talk enamel, homie",
+    "You see this bite? Paid in full",
+    "Every polish, every filling",
+    "Came with pressure and pull",
+    "They fear a man who smile wide",
+    "Show every scar on his gum line",
+    "Means he chewed through the struggle",
+    "Spit out the doubt",
+    "We don't cover our mouths",
+    "We cover the block",
+    "Breath fresh, word strong",
+    "That's respect that don't rot",
+    "Brush, brush — floss and flex",
+    "Rinse that hate right off my neck",
+    "Shine, shine — teeth on check",
+    "Whole block know I earn respect",
+    "Brush, brush — grind and gleam",
+    "White so loud, can't hear your scheme",
+    "Shine, shine — watch me beam",
+    "West side king with a fresh routine",
+    "Grill in, drip on",
+    "Door lock, keys swing",
+    "I laugh on my way out the crib",
+  ];
+
+  let lyricsIndex = 0;
+  let lyricsIntervalId = null;
+  let currentLine = 1; // toggles between 1 and 2
+
+  function startLyrics() {
+    lyricsIndex = 0;
+    currentLine = 1;
+    lyricsLine1.textContent = '';
+    lyricsLine2.textContent = '';
+    lyricsLine1.className = 'lyrics-line';
+    lyricsLine2.className = 'lyrics-line';
+    lyricsContainer.classList.add('visible');
+
+    showNextLyric();
+    // ~2.5s per line → 120s / 2.5 ≈ 48 lines, we have ~80 so plenty
+    lyricsIntervalId = setInterval(showNextLyric, 2500);
+  }
+
+  function showNextLyric() {
+    if (lyricsIndex >= lyrics.length) {
+      lyricsIndex = 0; // loop if needed
+    }
+
+    const text = lyrics[lyricsIndex];
+    lyricsIndex++;
+
+    if (currentLine === 1) {
+      lyricsLine2.className = 'lyrics-line exiting';
+      lyricsLine1.textContent = text;
+      lyricsLine1.className = 'lyrics-line active';
+      currentLine = 2;
+    } else {
+      lyricsLine1.className = 'lyrics-line exiting';
+      lyricsLine2.textContent = text;
+      lyricsLine2.className = 'lyrics-line active';
+      currentLine = 1;
+    }
+  }
+
+  function stopLyrics() {
+    clearInterval(lyricsIntervalId);
+    lyricsContainer.classList.remove('visible');
+    lyricsLine1.className = 'lyrics-line';
+    lyricsLine2.className = 'lyrics-line';
+  }
+
+  let isPlaying = false;
+  let secondsLeft = TOTAL_SECONDS;
+  let intervalId = null;
+  let audio = null;
+
+  function startMusic() {
+    const song = songs[Math.floor(Math.random() * songs.length)];
+    songTitle.textContent = song.title;
+    songArtist.textContent = song.artist;
+
+    audio = new Audio(song.file);
+    audio.loop = false;
+    audio.play().catch(e => console.log('Audio play failed:', e));
+  }
+
+  function stopMusic() {
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+      audio = null;
+    }
+  }
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+  }
+
+  function updateProgress() {
+    const elapsed = TOTAL_SECONDS - secondsLeft;
+    const pct = elapsed / TOTAL_SECONDS;
+    const offset = CIRCUMFERENCE * (1 - pct);
+    progressCircle.style.strokeDasharray = CIRCUMFERENCE;
+    progressCircle.style.strokeDashoffset = offset;
+  }
+
+  function tick() {
+    secondsLeft--;
+    timerEl.textContent = formatTime(secondsLeft);
+    updateProgress();
+
+    if (secondsLeft <= 0) {
+      finish();
+    }
+  }
+
+  function start() {
+    isPlaying = true;
+    secondsLeft = TOTAL_SECONDS;
+    timerEl.textContent = formatTime(secondsLeft);
+
+    // UI updates
+    playIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+    playBtn.classList.add('active');
+    btnRing.classList.add('active');
+    titleEl.classList.add('active');
+    timerEl.classList.add('active');
+    doneMsg.classList.remove('visible');
+
+    songInfo.classList.add('visible');
+
+    // Start mp3 playback — must be inside user gesture (click) for mobile
+    startMusic();
+    startLyrics();
+
+    updateProgress();
+    intervalId = setInterval(tick, 1000);
+  }
+
+  function stop() {
+    isPlaying = false;
+    clearInterval(intervalId);
+
+    // Stop audio & lyrics
+    stopMusic();
+    stopLyrics();
+
+    // Reset UI
+    playIcon.innerHTML = '<polygon points="6,3 20,12 6,21"/>';
+    playBtn.classList.remove('active');
+    btnRing.classList.remove('active');
+    titleEl.classList.remove('active');
+    timerEl.classList.remove('active');
+    songInfo.classList.remove('visible');
+    secondsLeft = TOTAL_SECONDS;
+    timerEl.textContent = formatTime(secondsLeft);
+    progressCircle.style.strokeDashoffset = CIRCUMFERENCE;
+  }
+
+  function finish() {
+    clearInterval(intervalId);
+    isPlaying = false;
+
+    // Stop audio & lyrics
+    stopMusic();
+    stopLyrics();
+
+    // Vibrate celebration
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+
+    // Show done message
+    doneMsg.classList.add('visible');
+
+    // Reset after 3 seconds
+    setTimeout(() => {
+      doneMsg.classList.remove('visible');
+      stop();
+    }, 3000);
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (isPlaying) {
+      stop();
+    } else {
+      start();
+    }
+  });
+
+  // Tap anywhere on done screen to dismiss
+  doneMsg.addEventListener('click', () => {
+    doneMsg.classList.remove('visible');
+    stop();
+  });
+
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+</script>
+
+</body>
+</html>
