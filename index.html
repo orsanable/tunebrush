@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0a0a0a">
-  <link rel="manifest" href="/tunebrush/manifest.json">
+  <link rel="manifest" href="/tunebrush/manifest.json?v=5">
   <link rel="apple-touch-icon" href="/tunebrush/icon-192.png">
   <title>TuneBrush</title>
   <style>
@@ -275,7 +275,7 @@
         <circle class="progress-fill" id="progressCircle" cx="108" cy="108" r="100" />
       </svg>
     </div>
-    <button class="play-btn" id="playBtn" aria-label="Baslat">
+    <button class="play-btn" id="playBtn" aria-label="Başlat">
       <svg id="playIcon" viewBox="0 0 24 24">
         <polygon points="6,3 20,12 6,21" />
       </svg>
@@ -294,9 +294,9 @@
 </div>
 
 <div class="done-msg" id="doneMsg">
-  <div class="checkmark">&#10024;</div>
+  <div class="checkmark">✨</div>
   <div class="done-text">Harika!</div>
-  <div class="done-sub">2 dakika tamam, disler piril piril</div>
+  <div class="done-sub">2 dakika tamam, dişler pırıl pırıl</div>
 </div>
 
 <script>
@@ -305,7 +305,7 @@
 
   // Songs — mp3 files in songs/ folder
   const songs = [
-    { title: 'TuneBrush Mix', artist: '\u266a', file: '/tunebrush/songs/song1.mp3' },
+    { title: 'TuneBrush Mix', artist: '♪', file: 'songs/song1.mp3' },
   ];
 
   // Elements
@@ -345,13 +345,13 @@
     "Talk slick to my face",
     "If you shine like this breath",
     "They gon' know your place",
-    "Brush, brush \u2014 floss and flex",
+    "Brush, brush — floss and flex",
     "Rinse that hate right off my neck",
-    "Shine, shine \u2014 teeth on check",
+    "Shine, shine — teeth on check",
     "Whole block know I earn respect",
-    "Brush, brush \u2014 grind and gleam",
+    "Brush, brush — grind and gleam",
     "White so loud, can't hear your scheme",
-    "Shine, shine \u2014 watch me beam",
+    "Shine, shine — watch me beam",
     "West side king with a fresh routine",
     "Tap that faucet",
     "Steam cut through the air",
@@ -369,13 +369,13 @@
     "Hit a side profile",
     "Put your money where your molars at",
     "I crack a smile",
-    "Brush, brush \u2014 floss and flex",
+    "Brush, brush — floss and flex",
     "Rinse that hate right off my neck",
-    "Shine, shine \u2014 teeth on check",
+    "Shine, shine — teeth on check",
     "Whole block know I earn respect",
-    "Brush, brush \u2014 grind and gleam",
+    "Brush, brush — grind and gleam",
     "White so loud, can't hear your scheme",
-    "Shine, shine \u2014 watch me beam",
+    "Shine, shine — watch me beam",
     "West side king with a fresh routine",
     "Listen...",
     "Out here, they count your crowns",
@@ -392,13 +392,13 @@
     "We cover the block",
     "Breath fresh, word strong",
     "That's respect that don't rot",
-    "Brush, brush \u2014 floss and flex",
+    "Brush, brush — floss and flex",
     "Rinse that hate right off my neck",
-    "Shine, shine \u2014 teeth on check",
+    "Shine, shine — teeth on check",
     "Whole block know I earn respect",
-    "Brush, brush \u2014 grind and gleam",
+    "Brush, brush — grind and gleam",
     "White so loud, can't hear your scheme",
-    "Shine, shine \u2014 watch me beam",
+    "Shine, shine — watch me beam",
     "West side king with a fresh routine",
     "Grill in, drip on",
     "Door lock, keys swing",
@@ -419,7 +419,7 @@
     lyricsContainer.classList.add('visible');
 
     showNextLyric();
-    // ~2.5s per line => 120s / 2.5 = 48 lines, we have ~80 so plenty
+    // ~2.5s per line → 120s / 2.5 ≈ 48 lines, we have ~80 so plenty
     lyricsIntervalId = setInterval(showNextLyric, 2500);
   }
 
@@ -576,9 +576,19 @@
     stop();
   });
 
-  // Register service worker
+  // Aggressively clear old caches and re-register service worker
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/tunebrush/sw.js').catch(() => {});
+    // First unregister ALL existing service workers
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      const unregPromises = registrations.map(r => r.unregister());
+      return Promise.all(unregPromises);
+    }).then(() => {
+      // Clear all caches
+      return caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
+    }).then(() => {
+      // Re-register with cache-busting
+      return navigator.serviceWorker.register('/tunebrush/sw.js?v=5');
+    }).catch(() => {});
   }
 </script>
 

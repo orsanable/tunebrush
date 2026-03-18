@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tunebrush-v4';
+const CACHE_NAME = 'tunebrush-v5';
 const BASE = '/tunebrush/';
 const ASSETS = [
   BASE,
